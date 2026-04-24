@@ -1,51 +1,56 @@
+#include "_cpp.hpp"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
+
+void init(GLFWwindow *window) {}
+
 // Function to render a frame
-void display(GLFWwindow* window, double currentTime) {
-    glClearColor(1.0, 0.0, 0.0, 1.0);  // Red background
-    glClear(GL_COLOR_BUFFER_BIT);
+void display(GLFWwindow *window, double currentTime)
+{
+  glClearColor(1.0, 0.0, 0.0, 1.0);// Red background
+  glClear(GL_COLOR_BUFFER_BIT);
 }
 
-int main(void) {
-    // Initialize GLFW
-    if (!glfwInit()) {
-        exit(EXIT_FAILURE);
-    }
 
-    // Request OpenGL 4.3 core profile
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+int main()
+{
+  // a. initialize GLFW library,
+  if (not glfwInit()) { exit(EXIT_FAILURE); }
 
-    // Create a window
-    GLFWwindow* window = glfwCreateWindow(600, 600, "Chapter2 - program1", nullptr, nullptr);
-    if (!window) {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
+  request_opengl_version();// 4.3 core profile
 
-    glfwMakeContextCurrent(window);
-
-    // Initialize GLEW
-    if (glewInit() != GLEW_OK) {
-        exit(EXIT_FAILURE);
-    }
-
-    glfwSwapInterval(1);  // Enable VSync
-
-    // Main loop
-    while (!glfwWindowShouldClose(window)) {
-        display(window, glfwGetTime());
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    // Clean up
-    glfwDestroyWindow(window);
+  // b. instantiates a GLFWwindow,
+  GLFWwindow *window = glfwCreateWindow_cpp({ .width = 600, .height = 600, .title = "Chapter2 - program1" });
+  if (not window) {
     glfwTerminate();
-    exit(EXIT_SUCCESS);
+    exit(EXIT_FAILURE);
+  }
+
+  glfwMakeContextCurrent(window);
+
+  // c. initialize GLEW library,
+  if (glewInit() != GLEW_OK) { exit(EXIT_FAILURE); }
+
+  // d. calls once “init()”: put here app specific tasks.
+  init(window);
+
+  glfwSwapInterval(1);// Enable VSync
+
+  // Main loop
+  while (not glfwWindowShouldClose(window)) {
+    // e. repeatedly calls “display()”:  draws code into GLFWwindow.
+    display(window, glfwGetTime());
+    glfwSwapBuffers(window);// paints the screen
+    glfwPollEvents();// detects events, like keys, mouse, window resize, etc.
+  }
+
+  // Clean up
+  glfwDestroyWindow(window);
+  glfwTerminate();
+  exit(EXIT_SUCCESS);
 }
