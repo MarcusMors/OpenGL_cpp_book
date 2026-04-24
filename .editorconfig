@@ -1,0 +1,35 @@
+# https://editorconfig.org/
+# https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties
+# https://en.wikipedia.org/wiki/Indentation_style#K&R_style
+# https://editorconfig-specification.readthedocs.io/
+
+# It is acceptable and often preferred to leave certain EditorConfig properties unspecified. For example, tab_width need not be specified unless it differs from the value of indent_size. Also, when indent_style is set to "tab", it may be desirable to leave indent_size unspecified so readers may view the file using their preferred indentation width. Additionally, if a property is not standardized in your project (end_of_line for example), it may be best to leave it blank.
+
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{html,css,pug}]
+tab_width = 2
+
+[*.{json,yml,code-snippets}]
+indent_style = space
+indent_size = 2
+
+[*.{zshrc,bashrc}]
+indent_style = space
+indent_size = 2
+
+[{Makefile,makefile}]
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_style = space
+indent_size = 4
