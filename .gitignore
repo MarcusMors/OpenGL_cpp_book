@@ -1,3 +1,7 @@
+helper.*
+helper
+*helper*.*
+helper/**
 build
 build/**
 .venv

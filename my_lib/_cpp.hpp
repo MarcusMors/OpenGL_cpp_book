@@ -1,9 +1,29 @@
+#ifndef ___CPP_H__
+#define ___CPP_H__
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <cstddef>
 #include <iostream>
 #include <string>
+#include <string_view>
+#include <vector>
+
+// This macro creates a static, compile-time character array,
+// fills it with the file's bytes via #embed, and returns a lightweight string_view.
+// #define GL_EMBED_SHADER(filepath)                              \
+//   ([]() -> std::string_view {                                  \
+//     static constexpr char shader_data[] = { #embed filepath }; \
+//     return std::string_view(shader_data, sizeof(shader_data)); \
+//   }())
 
 using namespace std;
+
+template<size_t N> constexpr string_view embed_to_string(const unsigned char (&data)[N])
+{
+  // Cast the unsigned char array to const char* for string_view
+  return string_view(reinterpret_cast<const char *>(data), N);
+}
 
 void request_opengl_version()
 {
@@ -27,3 +47,75 @@ GLFWwindow *glfwCreateWindow_cpp(P_glfwCreateWindow_cpp window_settings)
   GLFWwindow *window = glfwCreateWindow(ws.width, ws.height, ws.title.c_str(), nullptr, nullptr);
   return window;
 }
+
+class Shader
+{
+public:
+  GLuint id{};
+
+  // The constructor takes the shader type and the embedded source code
+  Shader(GLenum t_type, string_view t_source)
+  {
+    id = glCreateShader(t_type);
+
+    const GLchar *src = t_source.data();
+    GLint length = static_cast<GLint>(t_source.size());
+
+    glShaderSource(id, 1, &src, &length);// &length -> nullptr if length is unknown and src is null-terminated
+    glCompileShader(id);
+
+    checkCompileErrors();
+  }
+
+  ~Shader() { glDeleteShader(id); }
+
+  // Delete copy constructors to prevent accidental double-deletion of OpenGL IDs
+  Shader(const Shader &) = delete;
+  Shader &operator=(const Shader &) = delete;
+
+private:
+  void checkCompileErrors()
+  {
+    GLint success{};
+    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+    if (not success) {
+      GLint logLength;
+      glGetShaderiv(id, GL_INFO_LOG_LENGTH, &logLength);
+      vector<char> infoLog(logLength);
+      glGetShaderInfoLog(id, logLength, nullptr, infoLog.data());
+      cerr << "SHADER_COMPILATION_ERROR:\n" << infoLog.data() << "\n";
+    }
+  }
+};
+
+class Program
+{
+public:
+  GLuint id{};
+
+  Program(const Shader &vertexShader, const Shader &fragmentShader)
+  {
+    id = glCreateProgram();
+    glAttachShader(id, vertexShader.id);
+    glAttachShader(id, fragmentShader.id);
+    glLinkProgram(id);
+
+    checkLinkErrors();
+  }
+
+  void use() const { glUseProgram(id); }
+
+private:
+  void checkLinkErrors()
+  {
+    GLint success;
+    glGetProgramiv(id, GL_LINK_STATUS, &success);
+    if (!success) {
+      GLchar infoLog[512];
+      glGetProgramInfoLog(id, sizeof(infoLog), nullptr, infoLog);
+      cerr << "ERROR: Program linking failed:\n" << infoLog << endl;
+    }
+  }
+};
+
+#endif// ___CPP_H__
