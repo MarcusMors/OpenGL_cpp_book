@@ -9,64 +9,64 @@ GLuint renderingProgram;
 GLuint vao[numVAOs];
 
 // Helper function to check shader compilation status
-void checkShaderCompilation(GLuint shader, const char *shaderType)
-{
-  GLint success;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    GLchar infoLog[512];
-    glGetShaderInfoLog(shader, sizeof(infoLog), nullptr, infoLog);
-    std::cerr << "ERROR: " << shaderType << " shader compilation failed:\n" << infoLog << std::endl;
-  }
-}
+// void checkShaderCompilation(GLuint shader, const char *shaderType)
+// {
+//   GLint success;
+//   glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+//   if (!success) {
+//     GLchar infoLog[512];
+//     glGetShaderInfoLog(shader, sizeof(infoLog), nullptr, infoLog);
+//     cerr << "ERROR: " << shaderType << " shader compilation failed:\n" << infoLog << endl;
+//   }
+// }
 
 // Helper function to check program linking status
-void checkProgramLinking(GLuint program)
-{
-  GLint success;
-  glGetProgramiv(program, GL_LINK_STATUS, &success);
-  if (!success) {
-    GLchar infoLog[512];
-    glGetProgramInfoLog(program, sizeof(infoLog), nullptr, infoLog);
-    std::cerr << "ERROR: Program linking failed:\n" << infoLog << std::endl;
-  }
-}
+// void checkProgramLinking(GLuint program)
+// {
+//   GLint success;
+//   glGetProgramiv(program, GL_LINK_STATUS, &success);
+//   if (!success) {
+//     GLchar infoLog[512];
+//     glGetProgramInfoLog(program, sizeof(infoLog), nullptr, infoLog);
+//     cerr << "ERROR: Program linking failed:\n" << infoLog << endl;
+//   }
+// }
 
-GLuint createShaderProgram()
-{
-  static const char vshader_source[] = {
-#embed "vertex.glsl"
-    , '\0'
-  };
-  GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-  const char *vSrc = vshader_source;
-  glShaderSource(vShader, 1, &vSrc, nullptr);
-  glCompileShader(vShader);
-  checkShaderCompilation(vShader, "vertex");
+// GLuint createShaderProgram()
+// {
+//   static const char vshader_source[] = {
+// #embed "vertex.glsl"
+//     , '\0'
+//   };
+//   GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
+//   const char *vSrc = vshader_source;
+//   glShaderSource(vShader, 1, &vSrc, nullptr);
+//   glCompileShader(vShader);
+//   checkShaderCompilation(vShader, "vertex");
 
-  static const char fshader_source[] = {
-#embed "fragment.glsl"
-    , '\0'
-  };
-  GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
-  const char *fSrc = fshader_source;
-  glShaderSource(fShader, 1, &fSrc, nullptr);
-  glCompileShader(fShader);
-  checkShaderCompilation(fShader, "fragment");
+//   static const char fshader_source[] = {
+// #embed "fragment.glsl"
+//     , '\0'
+//   };
+//   GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
+//   const char *fSrc = fshader_source;
+//   glShaderSource(fShader, 1, &fSrc, nullptr);
+//   glCompileShader(fShader);
+//   checkShaderCompilation(fShader, "fragment");
 
 
-  GLuint program = glCreateProgram();
-  glAttachShader(program, vShader);
-  glAttachShader(program, fShader);
-  glLinkProgram(program);
-  checkProgramLinking(program);
+//   GLuint program = glCreateProgram();
+//   glAttachShader(program, vShader);
+//   glAttachShader(program, fShader);
+//   glLinkProgram(program);
+//   checkProgramLinking(program);
 
-  // Shader objects are no longer needed after linking
-  glDeleteShader(vShader);
-  glDeleteShader(fShader);
+//   // Shader objects are no longer needed after linking
+//   glDeleteShader(vShader);
+//   glDeleteShader(fShader);
 
-  return program;
-}
+//   return program;
+// }
 
 void init(GLFWwindow *window)
 {
@@ -78,11 +78,13 @@ void init(GLFWwindow *window)
 #embed "fragment.glsl"
   };
 
-  glewInit();// Initialize GLEW (must be done after a valid GL context)
-  Program program{ Shader(GL_VERTEX_SHADER, embed_to_string(vert_src)),
-    Shader(GL_FRAGMENT_SHADER, embed_to_string(frag_src)) };
+  Program program{};
+  // Program program{ Shader(GL_VERTEX_SHADER, embed_to_string(vert_src)),
+  //   Shader(GL_FRAGMENT_SHADER, embed_to_string(frag_src)) };
+  renderingProgram = program.id;
+  program.attach(Shader(GL_VERTEX_SHADER, embed_to_string(vert_src)));
+  program.attach(Shader(GL_FRAGMENT_SHADER, embed_to_string(frag_src)));
 
-  // renderingProgram = createShaderProgram();
   glGenVertexArrays(numVAOs, vao);
   glBindVertexArray(vao[0]);
   // No VBO needed because vertex shader does not read any attribute
@@ -103,42 +105,43 @@ int main()
 {
   // Initialize GLFW
   if (!glfwInit()) {
-    std::cerr << "Failed to initialize GLFW" << std::endl;
+    cerr << "Failed to initialize GLFW" << endl;
     return -1;
   }
 
-  // Request OpenGL 4.3 core profile
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
+  request_opengl_version();// 4.3 core profile
 
-  GLFWwindow *window = glfwCreateWindow(800, 600, "Single Point", nullptr, nullptr);
-  if (!window) {
-    std::cerr << "Failed to create window" << std::endl;
+  GLFWwindow *window = glfwCreateWindow({ .width = 600, .height = 600, .title = "Chapter2 - program1" });
+  if (window == nullptr) {
+    cerr << "Failed to create window" << endl;
     glfwTerminate();
     return -1;
   }
 
   glfwMakeContextCurrent(window);
-  glfwSwapInterval(1);// enable vsync
 
+  // c. initialize GLEW library,
+  // not now
+  glewInit();// Initialize GLEW (must be done after a valid GL context)
+
+  // d. calls once “init()”: put here app specific tasks.
   init(window);
 
+  glfwSwapInterval(1);// enable vsync
+
   // Main loop
-  while (!glfwWindowShouldClose(window)) {
+  while (not glfwWindowShouldClose(window)) {
     double currentTime = glfwGetTime();
     display(window, currentTime);
     glfwPollEvents();
   }
 
   // Optional cleanup
-  glDeleteVertexArrays(numVAOs, vao);
-  glDeleteProgram(renderingProgram);
+  // glDeleteProgram(renderingProgram);
+  // glDeleteVertexArrays(numVAOs, vao);
   glfwDestroyWindow(window);
   glfwTerminate();
 
+  exit(EXIT_SUCCESS);
   return 0;
 }

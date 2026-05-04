@@ -41,7 +41,7 @@ struct P_glfwCreateWindow_cpp
   GLFWwindow *resource_sharing{};// nullptr if no sharing
 };
 
-GLFWwindow *glfwCreateWindow_cpp(P_glfwCreateWindow_cpp window_settings)
+GLFWwindow *glfwCreateWindow(P_glfwCreateWindow_cpp window_settings)
 {
   auto ws = window_settings;
   GLFWwindow *window = glfwCreateWindow(ws.width, ws.height, ws.title.c_str(), nullptr, nullptr);
@@ -54,17 +54,15 @@ public:
   GLuint id{};
 
   // The constructor takes the shader type and the embedded source code
-  Shader(GLenum t_type, string_view t_source)
+  Shader(GLenum t_type, string_view t_source) : id{ glCreateShader(t_type) }
   {
-    id = glCreateShader(t_type);
-
     const GLchar *src = t_source.data();
     GLint length = static_cast<GLint>(t_source.size());
 
     glShaderSource(id, 1, &src, &length);// &length -> nullptr if length is unknown and src is null-terminated
     glCompileShader(id);
 
-    checkCompileErrors();
+    check_compile_errors();
   }
 
   ~Shader() { glDeleteShader(id); }
@@ -74,7 +72,7 @@ public:
   Shader &operator=(const Shader &) = delete;
 
 private:
-  void checkCompileErrors()
+  void check_compile_errors()
   {
     GLint success{};
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
@@ -91,22 +89,38 @@ private:
 class Program
 {
 public:
-  GLuint id{};
+  GLuint id{ glCreateProgram() };
 
+  void validate_id()
+  {
+    if (id == 0) { throw std::runtime_error("Failed to create OpenGL program object (no context?)"); }
+  }
+  Program() { validate_id(); }
   Program(const Shader &vertexShader, const Shader &fragmentShader)
   {
-    id = glCreateProgram();
+    validate_id();
     glAttachShader(id, vertexShader.id);
     glAttachShader(id, fragmentShader.id);
     glLinkProgram(id);
 
-    checkLinkErrors();
+    check_link_errors();
+  }
+
+  void attach(Shader t_shader)
+  {
+    glAttachShader(id, t_shader.id);
+    glLinkProgram(id);
+    check_link_errors();
   }
 
   void use() const { glUseProgram(id); }
+  ~Program()
+  {
+    if (id != 0) { glDeleteProgram(id); }
+  }
 
 private:
-  void checkLinkErrors()
+  void check_link_errors()
   {
     GLint success;
     glGetProgramiv(id, GL_LINK_STATUS, &success);

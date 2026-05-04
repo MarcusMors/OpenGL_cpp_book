@@ -25,7 +25,7 @@ int main()
   request_opengl_version();// 4.3 core profile
 
   // b. instantiates a GLFWwindow,
-  GLFWwindow *window = glfwCreateWindow_cpp({ .width = 600, .height = 600, .title = "Chapter2 - program1" });
+  GLFWwindow *window = glfwCreateWindow({ .width = 600, .height = 600, .title = "Chapter2 - program1" });
   if (not window) {
     glfwTerminate();
     exit(EXIT_FAILURE);
