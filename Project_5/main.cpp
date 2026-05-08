@@ -32,16 +32,25 @@ void init(GLFWwindow *window)
   // No VBO needed because vertex shader does not read any attribute
 }
 
+float x{ 0.0f };
+float inc{ 0.01f };
+
 void display(GLFWwindow *window, double currentTime)
 {
+  glClear(GL_DEPTH_BUFFER_BIT);// clear the screen
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);// optional: set clear color once
   glClear(GL_COLOR_BUFFER_BIT);// clear the screen
 
-  // program.use();
+  x += inc;
+  if (x > 1.0f) { inc = -0.01f; }// move to the left
+  if (x < -1.0f) { inc = 0.01f; }// move to the right
+  GLuint offset_loc = glGetUniformLocation(program_ptr->id, "offset");
+  glProgramUniform1f(program_ptr->id, offset_loc, x);
+
   program_ptr->use();
-  // glUseProgram(renderingProgram);
+
   glPointSize(30.0f);
-  glDrawArrays(GL_POINTS, 0, 1);// draw a single point at (0,0)
+  glDrawArrays_cpp({ .mode = GL_Draw::TRIANGLES, .start_index = 0, .count = 3 });
 
   glfwSwapBuffers(window);// present the rendered frame
 }

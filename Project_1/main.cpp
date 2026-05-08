@@ -20,15 +20,19 @@ void display(GLFWwindow *window, double currentTime)
 int main()
 {
   // a. initialize GLFW library,
-  if (not glfwInit()) { exit(EXIT_FAILURE); }
+  if (glfwInit() == 0) {
+    cerr << "Failed to initialize GLFW" << endl;
+    exit(EXIT_FAILURE);
+  }
 
   request_opengl_version();// 4.3 core profile
 
   // b. instantiates a GLFWwindow,
   GLFWwindow *window = glfwCreateWindow({ .width = 600, .height = 600, .title = "Chapter2 - program1" });
-  if (not window) {
+  if (window == nullptr) {
+    cerr << "Failed to create window" << endl;
     glfwTerminate();
-    exit(EXIT_FAILURE);
+    return -1;
   }
 
   glfwMakeContextCurrent(window);
@@ -44,7 +48,8 @@ int main()
   // Main loop
   while (not glfwWindowShouldClose(window)) {
     // e. repeatedly calls “display()”:  draws code into GLFWwindow.
-    display(window, glfwGetTime());
+    const double currentTime = glfwGetTime();
+    display(window, currentTime);
     glfwSwapBuffers(window);// paints the screen
     glfwPollEvents();// detects events, like keys, mouse, window resize, etc.
   }

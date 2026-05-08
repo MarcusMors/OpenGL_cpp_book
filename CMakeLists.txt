@@ -18,10 +18,11 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 # ----------------------------------------------------------------------------
 # Subproject toggles — comment out or set to OFF to skip a project
 # ----------------------------------------------------------------------------
-option(BUILD_PROJECT_1 "Build Project_1" ON)
-option(BUILD_PROJECT_2 "Build Project_2" ON)
-option(BUILD_PROJECT_3 "Build Project_3" OFF)
-option(BUILD_PROJECT_4 "Build Project_4" OFF)
+option(BUILD_PROJECT_1 "Build Project_1" OFF)
+option(BUILD_PROJECT_2 "Build Project_2" OFF)
+option(BUILD_PROJECT_3 "Build Project_3" ON)
+option(BUILD_PROJECT_4 "Build Project_4" ON)
+option(BUILD_PROJECT_5 "Build Project_5" ON)
 # Add more options here as you create new Project_N folders.
 
 # ----------------------------------------------------------------------------
@@ -307,4 +308,7 @@ if(BUILD_PROJECT_3)
 endif()
 if(BUILD_PROJECT_4)
     add_subdirectory(Project_4)
+endif()
+if(BUILD_PROJECT_5)
+    add_subdirectory(Project_5)
 endif()

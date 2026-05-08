@@ -41,7 +41,7 @@ void display(GLFWwindow *window, double currentTime)
   program_ptr->use();
   // glUseProgram(renderingProgram);
   glPointSize(30.0f);
-  glDrawArrays(GL_POINTS, 0, 1);// draw a single point at (0,0)
+  glDrawArrays_cpp({ .mode = GL_Draw::TRIANGLES, .start_index = 0, .count = 3 });
 
   glfwSwapBuffers(window);// present the rendered frame
 }
